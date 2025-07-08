@@ -11,10 +11,10 @@ public class UserDao {
     private String url = "jdbc:mysql://localhost:3306/user_database";
     private String username = "root";
     private String password = "920756";
-    private String driver = "com.mysql.jdbc.Driver";
+    private String driver = "com.mysql.cj.jdbc.Driver";
 
-    private static final String INSERT_USER_SQL = "INSERT INTO users" + "(name, email, country) VALUES"
-            +"(?, ?, ?)";
+    private static final String INSERT_USER_SQL =
+            "INSERT INTO users (name, email, country) VALUES (?, ?, ?);";
     private static final String SELECT_BY_ID = "SELECT id, name, email, country FROM users WHERE id=?";
 
     private static final String SELECT_ALL_USERS = "SELECT * FROM users";
@@ -46,6 +46,7 @@ public class UserDao {
             preparedStatement.setString(1, user.getName());
             preparedStatement.setString(2, user.getEmail());
             preparedStatement.setString(3, user.getCountry());
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +60,6 @@ public class UserDao {
             Connection connection = getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_ID);
             preparedStatement.setInt(1, id);
-            preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {
@@ -80,7 +80,6 @@ public class UserDao {
         try {
             Connection connection = getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_USERS);
-            preparedStatement.executeUpdate();
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {

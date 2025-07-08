@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.http.HttpRequest;
 import java.sql.SQLException;
+import java.util.List;
 
 @WebServlet("/")
 public class UserServlet extends HttpServlet {
@@ -21,7 +22,7 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+        doGet(req, resp);
     }
 
     @Override
@@ -45,18 +46,29 @@ public class UserServlet extends HttpServlet {
                 break;
 
             case "/edit" :
+                showEditForm(req, resp);
                 break;
 
             case "/update" :
+                try {
+                    updateUser(req, resp);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+
+            case "/list":     // ✅ Add this explicitly
+                listUser(req, resp);
                 break;
 
             default:
+                listUser(req, resp);
                 break;
         }
         }
 // to show new user form
         private void showNewForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            RequestDispatcher dispatcher = req.getRequestDispatcher("user-form.jsp");
+            RequestDispatcher dispatcher = req.getRequestDispatcher("add-new-user.jsp");
             dispatcher.forward(req, resp);
         }
         // to insert new user
@@ -84,7 +96,7 @@ public class UserServlet extends HttpServlet {
         int id = Integer.parseInt(req.getParameter("id"));
         User existingUser;
         existingUser = userDao.selectUser(id);
-                RequestDispatcher dispatcher = req.getRequestDispatcher("user-form.jsp");
+                RequestDispatcher dispatcher = req.getRequestDispatcher("add-new-user.jsp");
                 req.setAttribute("user", existingUser);
                 dispatcher.forward(req, resp);
     }
@@ -95,10 +107,17 @@ public class UserServlet extends HttpServlet {
         String email = req.getParameter("email");
         String country = req.getParameter("country");
         User user = new User(id, name, email, country);
-        userDao.insertUser(user);
+        userDao.updateUSer(user);
+        req.setAttribute("user", user);
         resp.sendRedirect("list");
     }
     // default case
+    private void listUser(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        List<User> userList = userDao.selectAllUser();
+        req.setAttribute("userList", userList);
+        req.getRequestDispatcher("index.jsp").forward(req, resp);
+
+    }
 
 
 }
